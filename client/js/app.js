@@ -14,9 +14,13 @@ app.config(function($routeProvider) {
 })
 
 app.service('User', function($http) {
+  this.userData = false;
 
   this.getProfile = function() {
-    return $http.get('/auth/profile');
+    $http.get('/auth/profile').success(function(response) {
+      this.userData = response;
+      return this.userData;
+    });
   }
 
   this.logout = function() {
@@ -25,9 +29,9 @@ app.service('User', function($http) {
 
 });
 
-app.controller('MainCtrl', function($scope, userData) {
+app.controller('MainCtrl', function($scope, User) {
 
-  $scope.userData = userData;
+  $scope.userData = User.userData;
 
 });
 
@@ -47,7 +51,7 @@ app.controller('NavbarCtrl', function($scope, User, userData) {
 
   $scope.logout = function() {
     User.logout().success(function(response) {
-      userData = {};
+      User.userData = false;
     });
   }
 });
