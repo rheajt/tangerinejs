@@ -1,17 +1,33 @@
 'use strict';
 
-var express = require('express');
-var mongoose = require('mongoose');
+var express = require('express'),
+    routes = require('./server/routes/index'),
+    mongoose = require('mongoose'),
+    passport = require('passport'),
+    session = require('express-session');
 
-var routes = require('./server/routes/index');
+var port = process.env.PORT || 8080;
 var app = express();
 
+require('dotenv').load();
+require('./server/config/passport')(passport);
 
-mongoose.connect('mongodb://localhost:27017/tangerinejs');
 
-routes(app);
+mongoose.connect(process.env.MONGO_URI);
 
-var port = process.argv[2] || 8080;
+app.use('/public', express.static(process.cwd() + '/client'));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+routes(app, passport);
+
+
 app.listen(port, function() {
-  console.log('Listening on port ' + port + ' ... ');
+  console.log('Tangerine server is listening on port ' + port + ' ... ');
 });
